@@ -20,6 +20,12 @@ export class ThingsApp {
             console.log("Echo WS closed. Re-opening.");
             this.openWs();
         });
+
+        this.socket.addEventListener('message', this.pinged);
+    }
+
+    private pinged = (event: MessageEvent) => {
+        console.log(`Message from server: ${event.data}`);
     }
 
     private reopenWsIfNeeded = () => {

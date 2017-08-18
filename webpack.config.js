@@ -1,4 +1,5 @@
 var webpack = require('webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
     entry: ['babel-polyfill', './src/main/typescript/client/client.ts'],
@@ -16,6 +17,7 @@ module.exports = {
         ]
     },
     plugins: [
+        new CleanWebpackPlugin(['public']),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
