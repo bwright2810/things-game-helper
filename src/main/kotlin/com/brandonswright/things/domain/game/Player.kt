@@ -2,7 +2,6 @@ package com.brandonswright.things.domain.game
 
 class Player(val name: String, val id: String) {
 
-    var response: Response? = null
     private var role = PlayerRole.UNASSIGNED
 
     val isReader = role == PlayerRole.READER
@@ -17,11 +16,7 @@ class Player(val name: String, val id: String) {
         role = PlayerRole.WRITER
     }
 
-    fun hasResponded() = response != null
-
-    fun markResponseGuessed() {
-        response?.guessed()
+    override fun toString(): String {
+        return "Player(name='$name', id='$id', role=$role)"
     }
-
-    fun isResponseGuessed() = response!!.state == ResponseState.GUESSED
 }

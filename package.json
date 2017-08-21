@@ -9,6 +9,8 @@
   "author": "Brandon Wright (bwright2810@gmail.com)",
   "license": "MIT",
   "devDependencies": {
+    "@types/jquery": "^3.2.11",
+    "@types/js-cookie": "^2.0.28",
     "@types/node": "^8.0.13",
     "@types/notifyjs": "^1.2.29",
     "babel-cli": "^6.24.1",
@@ -32,6 +34,7 @@
     "bootstrap": "^3.3.7",
     "izitoast": "^1.1.5",
     "jquery": "^3.2.1",
+    "js-cookie": "^2.1.4",
     "notifyjs": "^3.0.0",
     "toastr": "^2.1.2"
   }

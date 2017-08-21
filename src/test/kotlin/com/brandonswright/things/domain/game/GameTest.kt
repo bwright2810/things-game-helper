@@ -26,10 +26,10 @@ class GameTest {
         game.pickReader("1")
         Assert.assertTrue(game.state == GameState.WRITING_PENDING)
 
-        game.addResponse("2", Response("Cats"))
-        game.addResponse("1", Response("Dogs"))
+        game.addResponse(Response("2", "Cats"))
+        game.addResponse(Response("1", "Dogs"))
         Assert.assertTrue(game.state == GameState.WRITING_PENDING)
-        game.addResponse("3", Response("Birds"))
+        game.addResponse(Response("3", "Birds"))
         Assert.assertTrue(game.state == GameState.WRITING_SUBMITTED)
 
         game.lockResponses()

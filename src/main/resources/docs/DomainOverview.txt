@@ -32,4 +32,59 @@ Game
             - When a single response is remaining, the winner has something displayed to them and a
             PICK NEW READER button is displayed to the Reader. When this button is pressed, the state
             reverts to PICKING
-        
+
+Events:
+    Create Game
+        -> Creator name
+        - A new game with a generated ID and the creator name is created and stored in the in-memory repository
+        - User presented with game screen (including ID) and list of participants
+    Join Game
+        -> Player name
+        -> Game ID
+        - Game queried for from repository. New player added to game.
+        - User is presented with game ID, creator name, and list of participants
+    Begin game
+        -> gameId
+        - Game put into PICKING state.
+        - Creator presented with ability to select the reader.
+        - Users updated on game state
+    Reader selected
+        -> Reader ID
+        -> gameId
+        - Reader with given ID picked in game, moves to WRITING_PENDING state.
+        - All users notified of game state update and presented with a response box.
+    Response submitted
+        -> Response (playerId, responseText)
+        -> gameId
+        - Response added to game
+        - Submitter notified that response has been submitted and presented with a REWRITE RESPONSE option
+        - Reader notified of number of users that have submitted responses
+    Rewrite response selected
+        -> playerId
+        -> gameId
+        - Associated response deleted from game
+        - Writer presented with input box again
+        - Reader notified number of submitted responses has decremented
+    All responses submitted
+        -> gameId
+        - LOCK RESPONSES button shown to Reader
+    Responses locked
+        -> gameId
+        - Writers notified they cannot rewrite answers
+        - Reader prompted to read and a START GUESSING button
+    Start guessing
+        -> gameId
+        - Readers and writers can see list of responses.
+        - Reader has ability to mark a response as guessed
+    Response guessed
+        -> gameId
+        -> playerId
+        - Response marked as guessed in game
+        - Guessed responses marked on all users' screens
+    One response remaining
+        -> gameId
+        - Winner notified
+        - Re-pick reader button appears on reader's screen
+        - When selected, goes back to Reader selected event
+    
+    

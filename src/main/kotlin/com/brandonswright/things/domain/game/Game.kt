@@ -1,14 +1,15 @@
 package com.brandonswright.things.domain.game
 
-class Game(val id: String, private val creator: Player) {
+import mu.KLogging
 
+class Game(val id: String, creator: Player) {
+
+    companion object: KLogging()
+
+    val players: MutableList<Player> = mutableListOf()
+    val responses: MutableMap<String, Response> = mutableMapOf()
     var state: GameState = GameState.JOINING
         private set
-    val players: MutableList<Player> = mutableListOf()
-
-    init {
-        players.add(creator)
-    }
 
     val reader = players.filter { it.isReader }.firstOrNull()
 
@@ -18,7 +19,10 @@ class Game(val id: String, private val creator: Player) {
 
     fun addPlayer(player: Player) {
         if (state == GameState.JOINING) {
-            players.add(player)
+            if (!players.contains(player)) {
+                logger.info { "Adding player $player" }
+                players.add(player)
+            }
         } else {
             throw IllegalStateException("Cannot add a player when game is not in joining state")
         }
@@ -35,10 +39,10 @@ class Game(val id: String, private val creator: Player) {
         this.state = GameState.WRITING_PENDING
     }
 
-    fun addResponse(playerId: String, response: Response) {
-        players.filter{ it.id == playerId }.first().response = response
+    fun addResponse(response: Response) {
+        responses.put(response.playerId, response)
 
-        if (players.all { it.hasResponded() }) {
+        if (responses.size == players.size) {
             this.state = GameState.WRITING_SUBMITTED
         }
     }
@@ -52,7 +56,7 @@ class Game(val id: String, private val creator: Player) {
     }
 
     fun markPlayersResponseGuessed(playerId: String) {
-        players.filter{ it.id == playerId }.first().markResponseGuessed()
+        responses[playerId]!!.guess()
 
         if (doesOneResponseRemain()) {
             this.state = GameState.ROUND_OVER
@@ -60,7 +64,7 @@ class Game(val id: String, private val creator: Player) {
     }
 
     private fun doesOneResponseRemain(): Boolean {
-        val guessed = players.filter { it.isResponseGuessed() }.size
-        return players.size - guessed == 1
+        val guessed = responses.filter { it.value.isGuessed() }.size
+        return responses.size - guessed == 1
     }
 }
