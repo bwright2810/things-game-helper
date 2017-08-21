@@ -1,4 +1,4 @@
-package com.brandonswright
+package com.brandonswright.things.infrastructure.websocket
 
 import org.eclipse.jetty.websocket.api.Session
 import org.eclipse.jetty.websocket.api.annotations.WebSocket
@@ -9,13 +9,13 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect
 import java.util.concurrent.ConcurrentLinkedQueue
 
 @WebSocket
-class EchoWebSocket {
+class GameWebSocket {
     // Store sessions if you want to, for example, broadcast a message to all users
     private val sessions = ConcurrentLinkedQueue<Session>()
 
     @OnWebSocketConnect
     fun connected(session: Session) {
-        println("Connected")
+        println("Connected session with address: ${session.remoteAddress.address}")
         sessions.add(session)
     }
 

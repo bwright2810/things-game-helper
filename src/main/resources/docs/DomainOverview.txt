@@ -1,0 +1,35 @@
+Game
+    Creator: Player
+    Reader : Player
+    Writers : Player
+    Responses: Response
+        - Responses are submitted by Players but can be revoked (deleted) by the associated writer
+        during the WRITING GameState.
+        ResponseState
+            SUBMITTED
+            GUESSED
+    GameState
+        Wait for players to join (JOINING)
+            - Initial state when a new game is created  
+            - List of players connected shown to all players as well as CreatorName
+            - Creator can select BEGIN when all players have joined
+        Picking Reader (PICKING)
+            - Reader is selected
+            - All players presented with input box
+            - Players notified that the Reader is to read a topic and players are to write responses
+        Awaiting responses (WRITING)
+            - Players write Response and submit
+            - Reader can see how many players have submitted responses. Once all players have submitted
+            responses, Reader selects LOCK RESPONSES
+        Reading (READING)
+            - Reader presented with all responses. Reader is prompted to read responses.
+            - START GUESSING button
+        Guessing (GUESSING)
+            - List of responses is still present, but once a correct guess has been made,
+            the associated response can be marked as guessed by the Reader. This is also displayed to the
+            writers, but only the reader can mark a response as guessed.
+            - A nice touch would be to display to player when they have been guessed
+            - When a single response is remaining, the winner has something displayed to them and a
+            PICK NEW READER button is displayed to the Reader. When this button is pressed, the state
+            reverts to PICKING
+        

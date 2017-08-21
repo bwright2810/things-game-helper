@@ -1,5 +1,6 @@
 package com.brandonswright
 
+import com.brandonswright.things.infrastructure.websocket.GameWebSocket
 import spark.ModelAndView
 import spark.Spark.*
 import spark.template.jade.JadeTemplateEngine
@@ -17,10 +18,9 @@ fun main(args: Array<String>) {
         staticFiles.location("/public")
     }
 
-    webSocket("/echo", EchoWebSocket::class.java)
+    webSocket("/echo", GameWebSocket::class.java)
 
     get("/", { req, res ->
         ModelAndView(mapOf("message" to "Hello dude", "msgStyle" to "display:none;"), "index")
-    },
-            JadeTemplateEngine())
+    }, JadeTemplateEngine())
 }
