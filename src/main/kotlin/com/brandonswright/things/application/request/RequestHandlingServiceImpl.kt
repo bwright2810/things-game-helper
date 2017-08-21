@@ -30,4 +30,12 @@ class RequestHandlingServiceImpl : RequestHandlingService {
 
         return game
     }
+
+    override fun handleBeginRequest(gameId: String): Game {
+        val game = gameRepo.findGame(gameId)
+        game.beginPickingNewReader()
+        gameRepo.saveOrUpdateGame(game)
+
+        return game
+    }
 }

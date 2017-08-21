@@ -1,9 +1,10 @@
-package com.brandonswright
+package com.brandonswright.things.application
 
 import com.brandonswright.things.application.config.Injection
 import com.brandonswright.things.application.request.RequestHandlingService
 import com.brandonswright.things.domain.game.Game
 import com.brandonswright.things.infrastructure.websocket.GameWebSocket
+import com.brandonswright.things.infrastructure.websocket.SessionStore
 import mu.KotlinLogging
 import spark.ModelAndView
 import spark.Spark.*
@@ -11,6 +12,7 @@ import spark.template.jade.JadeTemplateEngine
 import spark.Spark.staticFiles
 
 val requestHandlingService: RequestHandlingService = Injection.instance()
+val sessionStore: SessionStore = Injection.instance()
 
 val logger = KotlinLogging.logger {}
 
@@ -29,7 +31,7 @@ fun main(args: Array<String>) {
     webSocket("/echo", GameWebSocket::class.java)
 
     get("/", { req, res ->
-        ModelAndView(mapOf("message" to "Hello dude", "msgStyle" to "display:none;"), "index")
+        ModelAndView(mapOf("message" to "Things App Helper", "msgStyle" to "display:none;"), "index")
     }, JadeTemplateEngine(  ))
 
     post("/create", { req, res ->
@@ -51,5 +53,18 @@ fun main(args: Array<String>) {
         val newGame: Game = requestHandlingService.handleNewGameRequest(playerName, playerId)
 
         return@post "{\"gameId\" : \"${newGame.id}\"}"
+    })
+
+    post("/begin", { req, res ->
+        val gameId = req.queryParams("gameId")
+        logger.debug { "Received request to begin game $gameId" }
+
+        requestHandlingService.handleBeginRequest(gameId)
+
+        val toast = "Reader is being selected"
+        val gameSessions = sessionStore.getAllSessionsForGame(gameId)
+        gameSessions.forEach { it.remote.sendString("TOAST|$toast")}
+
+        return@post ""
     })
 }

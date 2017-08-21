@@ -9,4 +9,5 @@ interface RequestHandlingService {
 
     fun handleJoinRequest(gameId: String, player: Player): Game
 
+    fun handleBeginRequest(gameId: String): Game
 }

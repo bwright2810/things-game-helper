@@ -1,6 +1,7 @@
 import * as $ from 'jquery'
 import * as izitoast from 'izitoast'
 import * as Cookies from 'js-cookie'
+import { Cookie } from './Cookie'
 
 export class ThingsApp {
 
@@ -32,12 +33,25 @@ export class ThingsApp {
         if (msg.startsWith("JOINED")) {
             const [_, gameId, playerId, creatorName, playersString] = msg.split("|")
             this.displayJoinedGame(playerId, creatorName, playersString)
+
+            let isCreator = Cookie.fromValue(Cookies.get("things")).isCreator
+            if (isCreator) {
+                if (playersString.split(",").length > 1) {
+                    $("#gameButtons").append("<br>")
+                    $("#gameButtons").append("<button type='button' id='begin-btn' onclick='things.beginGame();'>Begin</button>")
+                    $("#gameButtons").css("display", "block")
+                }
+            }
+        } else if (msg.startsWith("TOAST")) {
+            const toast = msg.split("|")[1]
+            izitoast.info({ title: "Hey friend!", message: toast, 
+                position: 'topLeft', timeout: 4000 })
         }
     }
 
     private displayJoinedGame = (playerId: string, creatorName: string, playersString: string) => {
-        const gameId = Cookies.get("things").split("|")[0]
-        const storedPlayerId = Cookies.get("things").split("|")[1]
+        const gameId = Cookie.fromValue(Cookies.get("things")).gameId
+        const storedPlayerId = Cookie.fromValue(Cookies.get("things")).playerId
         if (storedPlayerId == playerId) {
             izitoast.info({ title: "Hey friend!", message: `Joined Game ${gameId}`, 
                 position: 'topLeft', timeout: 4000 })
@@ -91,7 +105,7 @@ export class ThingsApp {
                 const json = JSON.parse(data)
                 console.log(json)
 
-                this.setCookie(json.gameId, newPlayerId, nick)
+                this.setCookie(new Cookie(json.gameId, newPlayerId, nick, true))
                 this.sendJoinCommand(json.gameId, newPlayerId, nick)
             })
             .fail(err => this.errorMsg(err.responseText))
@@ -127,8 +141,8 @@ export class ThingsApp {
         return `P${playerName.toUpperCase()}${new Date().getTime().toString().substring(9)}`
     }
 
-    private setCookie = (gameId: string, playerId: string, name: string) => {
-        Cookies.set("things", `${gameId}|${playerId}|${name}`)
+    private setCookie = (cookie: Cookie) => {
+        Cookies.set("things", cookie.toValue())
     }
 
     public joinGame = () => {
@@ -144,7 +158,7 @@ export class ThingsApp {
         const nick = this.inputValue($('#name').get(0))
         const newPlayerId = this.generateNewPlayerId(nick)
 
-        this.setCookie(gameId, newPlayerId, nick)
+        this.setCookie(new Cookie(gameId, newPlayerId, nick, false))
         
         this.sendJoinCommand(gameId, newPlayerId, nick)
     }
@@ -156,10 +170,10 @@ export class ThingsApp {
         this.socket.send(command)
     }
 
-    public test = async () => {
-        console.log('fetching')
-        // fetch('/test').then((res) => res.text()).then((text) => console.log(text));
-        let text = await (await fetch('/test')).text()
-        console.log(text)
+    private beginGame = () => {
+        const cookie = Cookie.fromValue(Cookies.get("things"))
+        $.post("/begin", cookie).done(data => {
+            this.hide("begin-btn")
+        }).fail(err => this.errorMsg(err.responseText))
     }
 }
