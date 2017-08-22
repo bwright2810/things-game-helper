@@ -173,7 +173,21 @@ export class ThingsApp {
     private beginGame = () => {
         const cookie = Cookie.fromValue(Cookies.get("things"))
         $.post("/begin", cookie).done(data => {
+            console.log(data)
+            let players = JSON.parse(data)
+
             this.hide("begin-btn")
+            let playersDiv = $("#players")
+            playersDiv.css("display", "none")
+            playersDiv.empty()
+    
+            playersDiv.append("<h3>Players Joined:</h3>")
+            playersDiv.append("<ul>")
+            for (let player of players) {
+                playersDiv.append(`<li>${player.name} <button onclick='things.guess(${player.id});'>Guess</button></li>`)
+            }
+            playersDiv.append("</ul>")
+            playersDiv.css("display", "block")
         }).fail(err => this.errorMsg(err.responseText))
     }
 }

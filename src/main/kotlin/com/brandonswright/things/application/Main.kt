@@ -5,6 +5,7 @@ import com.brandonswright.things.application.request.RequestHandlingService
 import com.brandonswright.things.domain.game.Game
 import com.brandonswright.things.infrastructure.websocket.GameWebSocket
 import com.brandonswright.things.infrastructure.websocket.SessionStore
+import com.google.gson.Gson
 import mu.KotlinLogging
 import spark.ModelAndView
 import spark.Spark.*
@@ -59,12 +60,12 @@ fun main(args: Array<String>) {
         val gameId = req.queryParams("gameId")
         logger.debug { "Received request to begin game $gameId" }
 
-        requestHandlingService.handleBeginRequest(gameId)
+        val game = requestHandlingService.handleBeginRequest(gameId)
 
         val toast = "Reader is being selected"
         val gameSessions = sessionStore.getAllSessionsForGame(gameId)
         gameSessions.forEach { it.remote.sendString("TOAST|$toast")}
 
-        return@post ""
+        return@post Gson().toJson(game.players)
     })
 }
