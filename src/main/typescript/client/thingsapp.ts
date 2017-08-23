@@ -70,7 +70,7 @@ export class ThingsApp {
         this.hide("or")
         this.hide("new-btn")
         
-        $("#main-content").get()[0].textContent = `In ${creatorName}'s Game (${gameId})`
+        $("#main-msg").get()[0].textContent = `In ${creatorName}'s Game (${gameId})`
         
         let playersDiv = $("#players")
         playersDiv.css("display", "none")
