@@ -53,7 +53,7 @@ fun main(args: Array<String>) {
 
         val newGame: Game = requestHandlingService.handleNewGameRequest(playerName, playerId)
 
-        return@post "{\"gameId\" : \"${newGame.id}\"}"
+        return@post Gson().toJson(newGame)
     })
 
     post("/begin", { req, res ->
@@ -66,6 +66,6 @@ fun main(args: Array<String>) {
         val gameSessions = sessionStore.getAllSessionsForGame(gameId)
         gameSessions.forEach { it.remote.sendString("TOAST|$toast")}
 
-        return@post Gson().toJson(game.players)
+        return@post Gson().toJson(game)
     })
 }

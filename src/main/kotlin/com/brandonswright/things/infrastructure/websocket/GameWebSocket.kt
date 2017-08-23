@@ -4,6 +4,7 @@ import com.brandonswright.things.application.config.Injection
 import com.brandonswright.things.application.request.RequestHandlingService
 import com.brandonswright.things.domain.game.GameRepository
 import com.brandonswright.things.domain.game.Player
+import com.google.gson.Gson
 import org.eclipse.jetty.websocket.api.Session
 import org.eclipse.jetty.websocket.api.annotations.WebSocket
 import java.io.IOException
@@ -35,8 +36,7 @@ class GameWebSocket {
 
             val game = requestHandlingService.handleJoinRequest(gameId, Player(playerName, playerId))
 
-            val playersString = game.players.map { it.name }.reduce { a, b -> "$a,$b" }
-            val broadcast = "JOINED|$gameId|$playerId|${game.creatorName}|$playersString"
+            val broadcast = "JOINED|${Gson().toJson(game)}|$playerId"
 
             broadcastToAllPlayers(broadcast, gameId)
             return

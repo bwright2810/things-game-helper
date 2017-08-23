@@ -2,6 +2,8 @@ import * as $ from 'jquery'
 import * as izitoast from 'izitoast'
 import * as Cookies from 'js-cookie'
 import { Cookie } from './Cookie'
+import { Game } from './Game'
+import { Player } from './Player'
 
 export class ThingsApp {
 
@@ -31,12 +33,13 @@ export class ThingsApp {
         console.log(`Message from server: ${msg}`)
 
         if (msg.startsWith("JOINED")) {
-            const [_, gameId, playerId, creatorName, playersString] = msg.split("|")
-            this.displayJoinedGame(playerId, creatorName, playersString)
+            const gameJson = JSON.parse(msg.split("|")[1])
+            const game = new Game(gameJson)
+            const joinedPlayerId = msg.split("|")[2]
+            this.displayJoinedGame(joinedPlayerId, game.creatorName, game.players)
 
-            let isCreator = Cookie.fromValue(Cookies.get("things")).isCreator
-            if (isCreator) {
-                if (playersString.split(",").length > 1) {
+            if (this.cookie().isCreator) {
+                if (game.players.length > 1) {
                     $("#gameButtons").append("<br>")
                     $("#gameButtons").append("<button type='button' id='begin-btn' onclick='things.beginGame();'>Begin</button>")
                     $("#gameButtons").css("display", "block")
@@ -49,10 +52,14 @@ export class ThingsApp {
         }
     }
 
-    private displayJoinedGame = (playerId: string, creatorName: string, playersString: string) => {
-        const gameId = Cookie.fromValue(Cookies.get("things")).gameId
-        const storedPlayerId = Cookie.fromValue(Cookies.get("things")).playerId
-        if (storedPlayerId == playerId) {
+    private cookie() {
+        return Cookie.fromValue(Cookies.get("things"))
+    }
+
+    private displayJoinedGame = (joinedPlayerId: string, creatorName: string, players: Player[]) => {
+        const gameId = this.cookie().gameId
+        const storedPlayerId = this.cookie().playerId
+        if (storedPlayerId == joinedPlayerId) {
             izitoast.info({ title: "Hey friend!", message: `Joined Game ${gameId}`, 
                 position: 'topLeft', timeout: 4000 })
         }
@@ -65,7 +72,6 @@ export class ThingsApp {
         
         $("#main-content").get()[0].textContent = `In ${creatorName}'s Game (${gameId})`
         
-        let players = playersString.split(",")
         let playersDiv = $("#players")
         playersDiv.css("display", "none")
         playersDiv.empty()
@@ -73,7 +79,7 @@ export class ThingsApp {
         playersDiv.append("<h3>Players Joined:</h3>")
         playersDiv.append("<ul>")
         for (let player of players) {
-            playersDiv.append(`<li>${player}</li>`)
+            playersDiv.append(`<li>${player.name}</li>`)
         }
         playersDiv.append("</ul>")
         playersDiv.css("display", "block")
@@ -102,11 +108,12 @@ export class ThingsApp {
 
         $.post('/create', { playerName: nick, playerId: newPlayerId })
             .done(data =>  {
-                const json = JSON.parse(data)
-                console.log(json)
+                const gameJson = JSON.parse(data)
+                console.log(gameJson)
+                const game = new Game(gameJson)
 
-                this.setCookie(new Cookie(json.gameId, newPlayerId, nick, true))
-                this.sendJoinCommand(json.gameId, newPlayerId, nick)
+                this.setCookie(new Cookie(game.id, newPlayerId, nick, true))
+                this.sendJoinCommand(game.id, newPlayerId, nick)
             })
             .fail(err => this.errorMsg(err.responseText))
     }
@@ -171,10 +178,10 @@ export class ThingsApp {
     }
 
     private beginGame = () => {
-        const cookie = Cookie.fromValue(Cookies.get("things"))
-        $.post("/begin", cookie).done(data => {
+        $.post("/begin", this.cookie()).done(data => {
             console.log(data)
-            let players = JSON.parse(data)
+            let gameJson = JSON.parse(data)
+            const game = new Game(gameJson)
 
             this.hide("begin-btn")
             let playersDiv = $("#players")
@@ -183,8 +190,8 @@ export class ThingsApp {
     
             playersDiv.append("<h3>Players Joined:</h3>")
             playersDiv.append("<ul>")
-            for (let player of players) {
-                playersDiv.append(`<li>${player.name} <button onclick='things.guess(${player.id});'>Guess</button></li>`)
+            for (let player of game.players) {
+                playersDiv.append(`<li>${player.name} <button onclick='things.makeReader(${player.id});'>Make Reader</button></li>`)
             }
             playersDiv.append("</ul>")
             playersDiv.css("display", "block")
