@@ -68,4 +68,8 @@ fun main(args: Array<String>) {
 
         return@post Gson().toJson(game)
     })
+
+    get("/playerList:gameId", { req, res ->
+
+    })
 }

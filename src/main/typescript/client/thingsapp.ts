@@ -64,25 +64,31 @@ export class ThingsApp {
                 position: 'topLeft', timeout: 4000 })
         }
         
-        this.hide("name")
-        this.hide("game-id")
-        this.hide("join-btn")
-        this.hide("or")
-        this.hide("new-btn")
+        // this.hide("name")
+        // this.hide("game-id")
+        // this.hide("join-btn")
+        // this.hide("or")
+        // this.hide("new-btn")
         
-        $("#main-msg").get()[0].textContent = `In ${creatorName}'s Game (${gameId})`
+        $("#main-msg").text(`In ${creatorName}'s Game (${gameId})`)
+        $("#main-content").empty()
+        $.get(`/playersList/:${gameId}`)
+        .done((html) => {
+            $("#main-content").html(html)
+        })
+        .fail(err => this.errorMsg(err.responseText))
         
-        let playersDiv = $("#players")
-        playersDiv.css("display", "none")
-        playersDiv.empty()
+        // let playersDiv = $("#players")
+        // playersDiv.css("display", "none")
+        // playersDiv.empty()
 
-        playersDiv.append("<h3>Players Joined:</h3>")
-        playersDiv.append("<ul>")
-        for (let player of players) {
-            playersDiv.append(`<li>${player.name}</li>`)
-        }
-        playersDiv.append("</ul>")
-        playersDiv.css("display", "block")
+        // playersDiv.append("<h3>Players Joined:</h3>")
+        // playersDiv.append("<ul>")
+        // for (let player of players) {
+        //     playersDiv.append(`<li>${player.name}</li>`)
+        // }
+        // playersDiv.append("</ul>")
+        // playersDiv.css("display", "block")
     }
 
     private hide = (elementId: string) => {
