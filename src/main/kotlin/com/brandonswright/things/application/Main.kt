@@ -3,6 +3,7 @@ package com.brandonswright.things.application
 import com.brandonswright.things.application.config.Injection
 import com.brandonswright.things.application.request.RequestHandlingService
 import com.brandonswright.things.domain.game.Game
+import com.brandonswright.things.domain.game.GameRepository
 import com.brandonswright.things.infrastructure.websocket.GameWebSocket
 import com.brandonswright.things.infrastructure.websocket.SessionStore
 import com.google.gson.Gson
@@ -14,6 +15,7 @@ import spark.Spark.staticFiles
 
 val requestHandlingService: RequestHandlingService = Injection.instance()
 val sessionStore: SessionStore = Injection.instance()
+val gameRepo: GameRepository = Injection.instance()
 
 val logger = KotlinLogging.logger {}
 
@@ -33,9 +35,9 @@ fun main(args: Array<String>) {
 
     get("/", { req, res ->
         ModelAndView(mapOf("message" to "Things App Helper", "msgStyle" to "display:none;"), "index")
-    }, JadeTemplateEngine(  ))
+    }, JadeTemplateEngine())
 
-    post("/create", { req, res ->
+    post("/create") { req, res ->
         val playerName = req.queryParams("playerName")
         val playerId = req.queryParams("playerId")
 
@@ -54,9 +56,9 @@ fun main(args: Array<String>) {
         val newGame: Game = requestHandlingService.handleNewGameRequest(playerName, playerId)
 
         return@post Gson().toJson(newGame)
-    })
+    }
 
-    post("/begin", { req, res ->
+    post("/begin") { req, res ->
         val gameId = req.queryParams("gameId")
         logger.debug { "Received request to begin game $gameId" }
 
@@ -67,9 +69,11 @@ fun main(args: Array<String>) {
         gameSessions.forEach { it.remote.sendString("TOAST|$toast")}
 
         return@post Gson().toJson(game)
-    })
+    }
 
-    get("/playerList:gameId", { req, res ->
-
-    })
+    get("/playersList/:gameId", { req, res ->
+        val gameId = req.params("gameId")
+        val game = gameRepo.findGame(gameId)
+        return@get ModelAndView(mapOf("players" to game.players), "playerslist")
+    }, JadeTemplateEngine())
 }

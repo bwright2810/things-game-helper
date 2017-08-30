@@ -72,7 +72,7 @@ export class ThingsApp {
         
         $("#main-msg").text(`In ${creatorName}'s Game (${gameId})`)
         $("#main-content").empty()
-        $.get(`/playersList/:${gameId}`)
+        $.get(`/playersList/${gameId}`)
         .done((html) => {
             $("#main-content").html(html)
         })
