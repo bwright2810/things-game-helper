@@ -47,6 +47,14 @@ class Game(val id: String, creator: Player) {
         }
     }
 
+    fun takeBackResponse(playerId: String) {
+        responses.remove(playerId)
+
+        if (this.state == GameState.WRITING_SUBMITTED) {
+            this.state = GameState.WRITING_PENDING
+        }
+    }
+
     fun lockResponses() {
         this.state = GameState.READING
     }

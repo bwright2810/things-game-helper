@@ -17,4 +17,11 @@ class InMemoryGameRepository : GameRepository {
     override fun deleteGame(gameId: String) {
         gamesMap.remove(gameId)
     }
+
+    override fun doAndSave(gameId: String, apply: (Game) -> Unit): Game {
+        val game = findGame(gameId)
+        apply(game)
+        saveOrUpdateGame(game)
+        return game
+    }
 }

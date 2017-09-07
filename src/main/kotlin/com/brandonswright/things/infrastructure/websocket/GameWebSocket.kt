@@ -11,9 +11,14 @@ import java.io.IOException
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect
+import spark.Spark
 
 @WebSocket
 class GameWebSocket {
+
+    init {
+        Spark.webSocket("/echo", GameWebSocket::class.java)
+    }
 
     val sessionStore: SessionStore = Injection.instance()
     val requestHandlingService: RequestHandlingService = Injection.instance()
