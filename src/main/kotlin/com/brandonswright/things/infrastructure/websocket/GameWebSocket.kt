@@ -20,8 +20,8 @@ class GameWebSocket {
         Spark.webSocket("/echo", GameWebSocket::class.java)
     }
 
-    val sessionStore: SessionStore = Injection.instance()
-    val requestHandlingService: RequestHandlingService = Injection.instance()
+    private val sessionStore: SessionStore = Injection.instance()
+    private val requestHandlingService: RequestHandlingService = Injection.instance()
 
     @OnWebSocketConnect
     fun connected(session: Session) {
@@ -43,13 +43,8 @@ class GameWebSocket {
 
             val broadcast = "JOINED|${Gson().toJson(game)}|$playerId"
 
-            broadcastToAllPlayers(broadcast, gameId)
+            sessionStore.broadcastToGamePlayers(gameId, broadcast)
             return
         }
-        session.remote.sendString(message) // and send it back
-    }
-
-    private fun broadcastToAllPlayers(broadcast: String, gameId: String) {
-        sessionStore.getAllSessionsForGame(gameId).forEach { it.remote.sendString(broadcast) }
     }
 }

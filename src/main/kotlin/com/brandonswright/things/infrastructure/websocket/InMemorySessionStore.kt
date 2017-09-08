@@ -32,4 +32,8 @@ class InMemorySessionStore : SessionStore {
     override fun exists(gameId: String, playerId: String): Boolean {
         return sessionMap.containsKey(PlayerSessionKey(gameId, playerId))
     }
+
+    override fun broadcastToGamePlayers(gameId: String, msg: String) {
+        getAllSessionsForGame(gameId).forEach { it.remote.sendString(msg) }
+    }
 }

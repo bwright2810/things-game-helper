@@ -1,0 +1,24 @@
+Back-end:
+    1. WritingController
+        Handles all non-read-only requests (i.e., POST, etc.). Makes a change to the Game's State. It then calls the WebSockets module to
+        broadcast the new game state to all listeners.
+    2. ReadingController
+        Handles all read-only requests (i.e., GET). Gets the index page, as well as used to return HTML to get requests using templates.
+    3. WebSockets
+        Connects to clients in order to broadcast messages without clients having to poll the server.
+    4. Domain
+        Represents the state of the game itself, and handles the actual business logic.
+
+Front-end:
+    1. Webpages
+        Represent different pages of the application, associated to different states of the game (though this is a SPA). 
+            a. UI
+                This includes javascript rendering and making GET requests for HTML.
+            b. User Actions
+                Generally performs POST (and other non-read-only) requests to perform updates to the game state.
+    2. WebSockets
+        Connects to the server and listens for broadcasts. Broadcast messages are passed to the Decider and StateMachine.
+    3. Decider/StateMachine
+        Depending on a given command and game state, chooses what changes to make to the UI. This can include loading a new Webpage or prompting the current Webpage to perform an update.
+    4. Session/Cookie Manager
+        Handles disconnects and reloads

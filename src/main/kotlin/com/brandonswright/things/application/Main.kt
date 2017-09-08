@@ -10,10 +10,6 @@ import com.brandonswright.things.infrastructure.websocket.SessionStore
 import mu.KotlinLogging
 import spark.Spark.staticFiles
 
-val requestHandlingService: RequestHandlingService = Injection.instance()
-val sessionStore: SessionStore = Injection.instance()
-val gameRepo: GameRepository = Injection.instance()
-
 val logger = KotlinLogging.logger {}
 
 fun main(args: Array<String>) {

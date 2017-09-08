@@ -13,4 +13,6 @@ interface SessionStore {
     fun deleteSession(gameId: String, playerId: String)
 
     fun exists(gameId: String, playerId: String): Boolean
+
+    fun broadcastToGamePlayers(gameId: String, msg: String)
 }

@@ -2,17 +2,20 @@ package com.brandonswright.things.application.controller
 
 import com.brandonswright.things.application.config.Injection
 import com.brandonswright.things.application.logger
-import com.brandonswright.things.application.requestHandlingService
-import com.brandonswright.things.application.sessionStore
+import com.brandonswright.things.application.request.RequestHandlingService
 import com.brandonswright.things.domain.game.Game
 import com.brandonswright.things.domain.game.GameRepository
 import com.brandonswright.things.domain.game.Response
+import com.brandonswright.things.infrastructure.websocket.SessionStore
+import com.brandonswright.things.infrastructure.websocket.WebSocketMessageFactory
 import com.google.gson.Gson
 import spark.Spark.*
 
 class WritingController {
 
     val gameRepo: GameRepository = Injection.instance()
+    val requestHandlingService: RequestHandlingService = Injection.instance()
+    val sessionStore: SessionStore = Injection.instance()
 
     init {
         post("/create") { req, res ->
@@ -33,7 +36,7 @@ class WritingController {
 
             val newGame: Game = requestHandlingService.handleNewGameRequest(playerName, playerId)
 
-            return@post Gson().toJson(newGame)
+            broadcastGame(newGame)
         }
 
         post("/begin") { req, res ->
@@ -46,7 +49,7 @@ class WritingController {
             val gameSessions = sessionStore.getAllSessionsForGame(gameId)
             gameSessions.forEach { it.remote.sendString("TOAST|$toast") }
 
-            return@post Gson().toJson(game)
+            broadcastGame(game)
         }
 
         post("/pickReader") { req, res ->
@@ -56,7 +59,7 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.pickReader(readerId) }
 
-            return@post Gson().toJson(game)
+            broadcastGame(game)
         }
 
         post("/addResponse") { req, res ->
@@ -67,7 +70,7 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.addResponse(Response(playerId, responseText)) }
 
-            return@post Gson().toJson(game)
+            broadcastGame(game)
         }
 
         delete("/removeResponse") { req, res ->
@@ -77,7 +80,7 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.takeBackResponse(playerId) }
 
-            return@delete Gson().toJson(game)
+            broadcastGame(game)
         }
 
         post("/lockResponses") { req, res ->
@@ -86,7 +89,7 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.lockResponses() }
 
-            return@post Gson().toJson(game)
+            broadcastGame(game)
         }
 
         post("/startGuessing") { req, res ->
@@ -95,7 +98,7 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.startGuessingStage() }
 
-            return@post Gson().toJson(game)
+            broadcastGame(game)
         }
 
         post("/guess") { req, res ->
@@ -105,7 +108,11 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.markPlayersResponseGuessed(playerId) }
 
-            return@post Gson().toJson(game)
+            broadcastGame(game)
         }
+    }
+
+    private fun broadcastGame(game: Game) {
+        sessionStore.broadcastToGamePlayers(game.id, WebSocketMessageFactory.buildMessageForGame(game))
     }
 }

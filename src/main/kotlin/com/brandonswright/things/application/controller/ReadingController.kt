@@ -1,11 +1,14 @@
 package com.brandonswright.things.application.controller
 
-import com.brandonswright.things.application.gameRepo
+import com.brandonswright.things.application.config.Injection
+import com.brandonswright.things.domain.game.GameRepository
 import spark.ModelAndView
 import spark.Spark.*
 import spark.template.jade.JadeTemplateEngine
 
 class ReadingController {
+
+    val gameRepo: GameRepository = Injection.instance()
 
     init {
         get("/", { req, res ->
