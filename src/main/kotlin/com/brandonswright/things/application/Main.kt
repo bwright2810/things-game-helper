@@ -24,7 +24,8 @@ fun main(args: Array<String>) {
         staticFiles.location("/public")
     }
 
-    GameWebSocket()
+    GameWebSocket.init()
     ReadingController()
     WritingController()
+
 }

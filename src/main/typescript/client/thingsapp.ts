@@ -4,51 +4,35 @@ import * as Cookies from 'js-cookie'
 import { Cookie } from './Cookie'
 import { Game } from './Game'
 import { Player } from './Player'
+import { WebSocketHandler } from './WebSocketHandler'
+import { SessionManager } from './SessionManager'
+import { GameStateMachine } from './GameStateMachine'
+import { WebPageFactory } from './WebPageFactory'
+import { StartPage } from './StartPage'
 
 export class ThingsApp {
 
-    private socket: WebSocket
+    private sessionManager: SessionManager
+    private stateMachine: GameStateMachine
 
     constructor() {
-        this.openWs()
+        this.sessionManager = new SessionManager()
+        this.stateMachine = new GameStateMachine()
     }
 
-    private openWs = () => {
-        this.socket = new WebSocket('ws://localhost:4567/echo')
-
-        this.socket.addEventListener('open', (event) => {
-            console.log("Echo WS opened")
-        });
-
-        this.socket.addEventListener('close', (event) => {
-            console.log("Echo WS closed. Re-opening.")
-            this.openWs()
-        });
-
-        this.socket.addEventListener('message', this.pinged)
-    }
-
-    private pinged = (event: MessageEvent) => {
-        const msg = event.data as string
-        console.log(`Message from server: ${msg}`)
-
-        if (msg.startsWith("JOINED")) {
-            const gameJson = JSON.parse(msg.split("|")[1])
-            const game = new Game(gameJson)
-            const joinedPlayerId = msg.split("|")[2]
-            this.displayJoinedGame(joinedPlayerId, game.creatorName, game.players)
-
-            if (this.cookie().isCreator) {
-                if (game.players.length > 1) {
-                    $("#gameButtons").append("<br>")
-                    $("#gameButtons").append("<button type='button' id='begin-btn' onclick='things.beginGame();'>Begin</button>")
-                    $("#gameButtons").css("display", "block")
-                }
-            }
-        } else if (msg.startsWith("TOAST")) {
-            const toast = msg.split("|")[1]
-            izitoast.info({ title: "Hey friend!", message: toast, 
-                position: 'topLeft', timeout: 4000 })
+    public init() {
+        if (this.sessionManager.isLoggedIn()) {
+            let gameId = this.sessionManager.getGameId()
+            console.log(`Resuming session with game: ${gameId}`)
+            $.get(`/game/${gameId}`)
+            .done((gameResponse) => {
+                let game = new Game(JSON.parse(gameResponse))
+                let nextPageName = this.stateMachine.determinePage(game)
+                WebPageFactory.getPage(nextPageName).load(game)
+            })
+            .fail(err => this.errorMsg(err.responseText))
+        } else {
+            new StartPage().init()
         }
     }
 
@@ -93,12 +77,6 @@ export class ThingsApp {
 
     private hide = (elementId: string) => {
         $(`#${elementId}`).get()[0].style.display = "none"
-    }
-
-    private reopenWsIfNeeded = () => {
-        if (this.socket.readyState != 1) {
-            this.openWs();
-        }
     }
 
     public newGame = () => {

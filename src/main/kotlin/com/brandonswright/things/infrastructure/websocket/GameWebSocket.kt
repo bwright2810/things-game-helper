@@ -16,8 +16,10 @@ import spark.Spark
 @WebSocket
 class GameWebSocket {
 
-    init {
-        Spark.webSocket("/echo", GameWebSocket::class.java)
+    companion object {
+        fun init() {
+            Spark.webSocket("/echo", GameWebSocket::class.java)
+        }
     }
 
     private val sessionStore: SessionStore = Injection.instance()
