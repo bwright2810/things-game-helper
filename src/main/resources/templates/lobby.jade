@@ -1,0 +1,7 @@
+div(id="players")
+    h3="Players:"
+    ul
+        for player in players
+            li= player.name
+if isCreator == "true"
+    button(type='button' id='begin-btn' onclick='things.beginGame()') Begin Game

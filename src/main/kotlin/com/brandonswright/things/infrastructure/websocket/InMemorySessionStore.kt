@@ -2,6 +2,7 @@ package com.brandonswright.things.infrastructure.websocket
 
 import mu.KLogging
 import org.eclipse.jetty.websocket.api.Session
+import org.eclipse.jetty.websocket.api.WebSocketException
 import java.util.concurrent.ConcurrentHashMap
 
 data class PlayerSessionKey(val gameId: String, val playerId: String)
@@ -34,6 +35,14 @@ class InMemorySessionStore : SessionStore {
     }
 
     override fun broadcastToGamePlayers(gameId: String, msg: String) {
-        getAllSessionsForGame(gameId).forEach { it.remote.sendString(msg) }
+        sessionMap.filter { it.key.gameId == gameId }.keys.forEach {
+            val session = sessionMap[it] ?: throw IllegalStateException("Shouldn't happen")
+            try {
+                session.remote.sendString(msg)
+            } catch (e: WebSocketException) {
+                println("Session for $it is no longer connected. Removing from store")
+                deleteSession(it.gameId, it.playerId)
+            }
+        }
     }
 }

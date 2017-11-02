@@ -25,11 +25,18 @@ export class StartPage extends WebPage {
     }
 
     public load(game: Game) {
-        this.webSocketHandler = new WebSocketHandler(this)
+        this.webSocketHandler = new WebSocketHandler(this);
+
+        (<any> window).things = this
+
+        $.get(`/startPage`)
+        .done((html: string) => {
+            $('#main-content').html(html)
+        })
+        .fail(err => this.errorMsg(err.responseText))
     }
 
     public update(game: Game) {
-
     }
 
     public newGame = () => {
@@ -50,7 +57,7 @@ export class StartPage extends WebPage {
                 const game = new Game(gameJson)
 
                 this.sessionManager.saveCookie(new Cookie(game.id, newPlayerId, nick, true))
-                this.sendJoinCommand(game.id, newPlayerId, nick)
+                this.webSocketHandler.sendJoinCommand(game.id, newPlayerId, nick)
             })
             .fail(err => this.errorMsg(err.responseText))
     }
@@ -83,5 +90,22 @@ export class StartPage extends WebPage {
 
     private generateNewPlayerId = (playerName: string): string => {
         return `P${playerName.toUpperCase()}${new Date().getTime().toString().substring(9)}`
+    }
+
+    public joinGame = () => {
+        const error = this.validate(true)
+        if (error != null) {
+            this.errorMsg(error)
+            return;
+        }
+
+        const textField = document.getElementById("game-id");
+        const gameId = ((<any> textField).value as string).toUpperCase()
+
+        const nick = this.inputValue($('#name').get(0))
+        const newPlayerId = this.generateNewPlayerId(nick)
+
+        this.sessionManager.saveCookie(new Cookie(gameId, newPlayerId, nick, false))
+        this.webSocketHandler.sendJoinCommand(gameId, newPlayerId, nick)
     }
 }

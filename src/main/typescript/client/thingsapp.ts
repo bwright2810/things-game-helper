@@ -26,9 +26,15 @@ export class ThingsApp {
             console.log(`Resuming session with game: ${gameId}`)
             $.get(`/game/${gameId}`)
             .done((gameResponse) => {
-                let game = new Game(JSON.parse(gameResponse))
-                let nextPageName = this.stateMachine.determinePage(game)
-                WebPageFactory.getPage(nextPageName).load(game)
+                if (gameResponse == "NOT FOUND") {
+                    console.log(`Game no longer exists. Going to Start page`)
+                    this.sessionManager.clearSession()
+                    new StartPage().init()
+                } else {
+                    let game = new Game(JSON.parse(gameResponse))
+                    let nextPageName = this.stateMachine.determinePage(game)
+                    WebPageFactory.getPage(nextPageName).load(game)
+                }
             })
             .fail(err => this.errorMsg(err.responseText))
         } else {
@@ -79,86 +85,8 @@ export class ThingsApp {
         $(`#${elementId}`).get()[0].style.display = "none"
     }
 
-    public newGame = () => {
-        const error = this.validate(false)
-
-        if (error != null) {
-            this.errorMsg(error)
-            return;
-        }
-
-        const nick = this.inputValue($('#name').get(0))
-        const newPlayerId = this.generateNewPlayerId(nick)
-
-        $.post('/create', { playerName: nick, playerId: newPlayerId })
-            .done(data =>  {
-                const gameJson = JSON.parse(data)
-                console.log(gameJson)
-                const game = new Game(gameJson)
-
-                this.setCookie(new Cookie(game.id, newPlayerId, nick, true))
-                this.sendJoinCommand(game.id, newPlayerId, nick)
-            })
-            .fail(err => this.errorMsg(err.responseText))
-    }
-
     private errorMsg = (msg: string) => {
         izitoast.error({ title: "Hey friend!", message: msg, position: 'topLeft', timeout: 10000 })
-    }
-
-    private validate = (joining: boolean): string => {
-        const nick = this.inputValue($('#name').get(0))
-
-        if (nick == "") {
-            return "Please enter a nickname";
-        }
-
-        if (joining) {
-            const gameId = this.inputValue($('#game-id').get(0))
-
-            if (gameId == "") {
-                return "Please enter ID of game to join";
-            }
-        }
-
-        return null;
-    }
-
-    private inputValue = (element: HTMLElement): string => {
-        return (<HTMLInputElement> element).value
-    }
-
-    private generateNewPlayerId = (playerName: string): string => {
-        return `P${playerName.toUpperCase()}${new Date().getTime().toString().substring(9)}`
-    }
-
-    private setCookie = (cookie: Cookie) => {
-        Cookies.set("things", cookie.toValue())
-    }
-
-    public joinGame = () => {
-        const error = this.validate(true)
-        if (error != null) {
-            this.errorMsg(error)
-            return;
-        }
-
-        const textField = document.getElementById("game-id");
-        const gameId = ((<any> textField).value as string).toUpperCase()
-
-        const nick = this.inputValue($('#name').get(0))
-        const newPlayerId = this.generateNewPlayerId(nick)
-
-        this.setCookie(new Cookie(gameId, newPlayerId, nick, false))
-        
-        this.sendJoinCommand(gameId, newPlayerId, nick)
-    }
-
-    private sendJoinCommand(gameId: string, playerId: string, playerName: string) {
-        const command = `JOIN|${gameId}|${playerId}|${playerName}`
-
-        console.log(`Sending: ${command}`)
-        this.socket.send(command)
     }
 
     private beginGame = () => {

@@ -38,4 +38,24 @@ export class SessionManager {
     public saveCookie = (cookie: Cookie) => {
         Cookies.set(SessionManager.COOKIE_SYMBOL, cookie.toValue())
     }
+
+    public hasCookie = (): boolean => {
+        return this.getCookie() != null
+    }
+
+    public isCreator = (): boolean => {
+        return this.getCookie() != null && this.getCookie().isCreator
+    }
+
+    public clearSession = () => {
+        Cookies.remove(SessionManager.COOKIE_SYMBOL)
+    }
+
+    public getPlayerId = (): string => {
+        if (this.hasCookie()) {
+            return this.getCookie().playerId
+        } else {
+            return null
+        }
+    }
 }

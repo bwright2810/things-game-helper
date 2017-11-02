@@ -42,8 +42,9 @@ class GameWebSocket {
             sessionStore.saveSession(gameId, playerId, session)
 
             val game = requestHandlingService.handleJoinRequest(gameId, Player(playerName, playerId))
+            val isCreator = "false"
 
-            val broadcast = "JOINED|${Gson().toJson(game)}|$playerId"
+            val broadcast = "JOINED|${Gson().toJson(game)}|$playerId|$isCreator"
 
             sessionStore.broadcastToGamePlayers(gameId, broadcast)
             return

@@ -36,7 +36,7 @@ class WritingController {
 
             val newGame: Game = requestHandlingService.handleNewGameRequest(playerName, playerId)
 
-            broadcastGame(newGame)
+            return@post Gson().toJson(newGame)
         }
 
         post("/begin") { req, res ->

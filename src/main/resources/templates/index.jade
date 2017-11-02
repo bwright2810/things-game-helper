@@ -3,9 +3,10 @@ html
     title= title
     link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css')
     link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/css/iziToast.min.css')
-    script(type='text/javascript' src='./bundle.js')
-  body(onload="things.init()")
+    
+  body
     div(style='padding:100px 0;')
       center
         div(id='main-msg' style='font-size:24px;')=message
         div(id='main-content')
+    script(type='text/javascript' src='./bundle.js')

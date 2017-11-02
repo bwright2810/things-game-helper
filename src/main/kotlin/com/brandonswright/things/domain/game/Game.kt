@@ -75,4 +75,9 @@ class Game(val id: String, creator: Player) {
         val guessed = responses.filter { it.value.isGuessed() }.size
         return responses.size - guessed == 1
     }
+
+    fun isCreator(playerId: String): Boolean {
+        val player = players.filter { it.id == playerId }.firstOrNull()
+        return player != null && player.name == creatorName
+    }
 }
