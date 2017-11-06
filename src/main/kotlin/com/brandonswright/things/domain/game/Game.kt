@@ -33,6 +33,7 @@ class Game(val id: String, creator: Player) {
         this.state = GameState.PICKING
         this.responses.clear()
         this.players.forEach { it.makeWriter() }
+        this.shuffledResponses = ArrayList()
     }
 
     fun pickReader(playerId: String) {
@@ -135,7 +136,7 @@ class Game(val id: String, creator: Player) {
     private var shuffledResponses: List<Response> = ArrayList()
 
     fun getResponses(): List<Response> {
-        if (shuffledResponses == null) {
+        if (shuffledResponses.isEmpty()) {
             val respList = responses.values.toList()
             Collections.shuffle(respList)
             shuffledResponses = respList
