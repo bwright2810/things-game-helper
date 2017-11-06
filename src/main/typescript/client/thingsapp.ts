@@ -1,14 +1,14 @@
 import * as $ from 'jquery'
 import * as izitoast from 'izitoast'
 import * as Cookies from 'js-cookie'
-import { Cookie } from './Cookie'
-import { Game } from './Game'
-import { Player } from './Player'
-import { WebSocketHandler } from './WebSocketHandler'
-import { SessionManager } from './SessionManager'
-import { GameStateMachine } from './GameStateMachine'
-import { WebPageFactory } from './WebPageFactory'
-import { StartPage } from './StartPage'
+import { Cookie } from './infrastructure/Cookie'
+import { Game } from './domain/Game'
+import { Player } from './domain/Player'
+import { WebSocketHandler } from './infrastructure/WebSocketHandler'
+import { SessionManager } from './infrastructure/SessionManager'
+import { GameStateMachine } from './pages/GameStateMachine'
+import { WebPageFactory } from './pages/WebPageFactory'
+import { StartPage } from './pages/StartPage'
 
 export class ThingsApp {
 

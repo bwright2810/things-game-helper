@@ -10,7 +10,7 @@ div(id="players")
                     if player.isReader()
                         |      (Reader)
 
-if currentPlayer.isReader()
+if currentPlayer.isReader() and game.state == "READING"
     br
     br
     div(id="instructionsDiv")

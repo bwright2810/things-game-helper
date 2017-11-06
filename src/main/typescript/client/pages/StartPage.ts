@@ -1,11 +1,11 @@
 import { WebPage } from './WebPage'
-import { Game } from './Game'
-import { WebSocketHandler } from './WebSocketHandler'
-import { SessionManager } from './SessionManager'
-import { Cookie } from './Cookie'
+import { Game } from '../domain/Game'
+import { WebSocketHandler } from '../infrastructure/WebSocketHandler'
+import { SessionManager } from '../infrastructure/SessionManager'
+import { Cookie } from '../infrastructure/Cookie'
 import * as izitoast from 'izitoast'
 import * as $ from 'jquery'
-import { WebSocketHandlerFactory } from './WebSocketHandlerFactory'
+import { WebSocketHandlerFactory } from '../infrastructure/WebSocketHandlerFactory'
 
 export class StartPage extends WebPage {
 
@@ -34,12 +34,7 @@ export class StartPage extends WebPage {
         $.get(`/startPage`)
         .done((html: string) => {
             $('#main-content').html(html)
-
-            $("#game-id").keyup((event) => {
-                if (event.keyCode == 13) {
-                    $("#join-btn").click();
-                }
-            });
+            this.addEventHooks()
         })
         .fail(err => this.errorMsg(err.responseText))
     }
@@ -48,7 +43,16 @@ export class StartPage extends WebPage {
         (<any> window).things = this
     }
 
+    private addEventHooks = () => {
+        $("#game-id").keyup((event) => {
+            if (event.keyCode == 13) {
+                $("#join-btn").click();
+            }
+        });
+    }
+
     public update(game: Game) {
+        // should never be called
     }
 
     public newGame = () => {
@@ -75,7 +79,7 @@ export class StartPage extends WebPage {
     }
 
     private errorMsg = (msg: string) => {
-        izitoast.error({ title: "Hey friend!", message: msg, position: 'topLeft', timeout: 10000 })
+        izitoast.error({ title: "", message: msg, position: 'topLeft', timeout: 10000 })
     }
 
     private validate = (joining: boolean): string => {

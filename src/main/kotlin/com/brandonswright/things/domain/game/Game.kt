@@ -1,6 +1,7 @@
 package com.brandonswright.things.domain.game
 
 import mu.KLogging
+import java.util.*
 
 class Game(val id: String, creator: Player) {
 
@@ -10,10 +11,6 @@ class Game(val id: String, creator: Player) {
     val responses: MutableMap<String, Response> = mutableMapOf()
     var state: GameState = GameState.JOINING
         private set
-
-    val reader = players.filter { it.isReader() }.firstOrNull()
-
-    val writers = players.filter { it.isWriter() }
 
     val creatorName = creator.name
 
@@ -135,7 +132,14 @@ class Game(val id: String, creator: Player) {
         return responses.size
     }
 
+    private var shuffledResponses: List<Response> = ArrayList()
+
     fun getResponses(): List<Response> {
-        return responses.values.toList()
+        if (shuffledResponses == null) {
+            val respList = responses.values.toList()
+            Collections.shuffle(respList)
+            shuffledResponses = respList
+        }
+        return shuffledResponses
     }
 }

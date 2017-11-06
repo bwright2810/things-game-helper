@@ -77,7 +77,9 @@ class WritingController {
             val responseText = req.queryParams("responseText")
             logger.debug { "Player $playerId in game $gameId responded with: $responseText" }
 
-            val game = gameRepo.doAndSave(gameId) { it.addResponse(playerId, responseText) }
+            val lowerCasedResponse = responseText.toLowerCase()
+
+            val game = gameRepo.doAndSave(gameId) { it.addResponse(playerId, lowerCasedResponse) }
 
             broadcastGame(game)
         }

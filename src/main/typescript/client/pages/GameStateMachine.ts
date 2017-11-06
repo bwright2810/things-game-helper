@@ -1,6 +1,6 @@
-import { Game } from './Game'
+import { Game } from '../domain/Game'
 import { StartPage } from './StartPage'
-import { SessionManager } from './SessionManager'
+import { SessionManager } from '../infrastructure/SessionManager'
 import { LobbyPage } from './LobbyPage'
 import { ResponsePage } from './ResponsePage'
 import { GuessingPage } from './GuessingPage'

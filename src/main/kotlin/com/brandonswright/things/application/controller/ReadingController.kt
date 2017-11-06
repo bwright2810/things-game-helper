@@ -2,6 +2,7 @@ package com.brandonswright.things.application.controller
 
 import com.brandonswright.things.application.config.Injection
 import com.brandonswright.things.domain.game.GameRepository
+import com.brandonswright.things.infrastructure.websocket.GameWebSocket
 import com.google.gson.Gson
 import mu.KLogging
 import spark.ModelAndView
@@ -74,6 +75,10 @@ class ReadingController {
             } catch (e: IllegalArgumentException) {
                 return@get "NOT FOUND"
             }
+        })
+
+        get("/webSocketAddress", { req, res ->
+            return@get GameWebSocket.WEB_SOCKET_ADDRESS
         })
     }
 }

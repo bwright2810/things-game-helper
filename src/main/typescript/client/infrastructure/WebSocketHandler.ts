@@ -1,8 +1,8 @@
-import { WebPage } from './Webpage'
-import { Game } from './Game'
-import { Message } from './Message'
-import { GameStateMachine } from './GameStateMachine'
-import { WebPageFactory } from './WebPageFactory'
+import { WebPage } from '../pages/Webpage'
+import { Game } from '../domain/Game'
+import { Message } from '../domain/Message'
+import { GameStateMachine } from '../pages/GameStateMachine'
+import { WebPageFactory } from '../pages/WebPageFactory'
 import { SessionManager } from './SessionManager'
 import * as izitoast from 'izitoast'
 import { Cookie } from './Cookie'
@@ -22,18 +22,25 @@ export class WebSocketHandler {
     }
 
     private openWs = () => {
-        this.socket = new WebSocket('ws://localhost:4567/echo')
+        $.get("/webSocketAddress")
+        .done((address: string) => {
+            this.socket = new WebSocket(address)
 
-        this.socket.addEventListener('open', (event) => {
-            console.log("Echo WS opened")
-        });
+            this.socket.addEventListener('open', (event) => {
+                console.log("WebSocket opened")
+            });
 
-        this.socket.addEventListener('close', (event) => {
-            console.log("Echo WS closed. Re-opening.")
-            this.openWs()
-        });
+            this.socket.addEventListener('close', (event) => {
+                console.log("WebSocket closed. Re-opening.")
+                this.openWs()
+            });
 
-        this.socket.addEventListener('message', this.pinged)
+            this.socket.addEventListener('message', this.pinged)
+        }).fail(err => this.errorMsg(err.responseText))
+    }
+
+    private errorMsg = (msg: string) => {
+        izitoast.error({ title: "", message: msg, position: 'topLeft', timeout: 10000 })
     }
 
     public updatePage(webPage: WebPage) {
@@ -52,6 +59,9 @@ export class WebSocketHandler {
                 const name = msg.split("|")[3]
 
                 this.sessionManager.saveCookie(new Cookie(game.id, playerId, name, false))
+
+                izitoast.info({ title: "", message: "Joined Game ${game.id}", 
+                    position: 'topLeft', timeout: 4000 })
             }
 
             this.loadPageForGame(game)
@@ -62,7 +72,7 @@ export class WebSocketHandler {
             this.loadPageForGame(game)
         } else if (msg.startsWith("TOAST")) {
             const toast = msg.split("|")[1]
-            izitoast.info({ title: "Hey friend!", message: toast, 
+            izitoast.info({ title: "", message: toast, 
                 position: 'topLeft', timeout: 4000 })
         }
     }
@@ -79,13 +89,11 @@ export class WebSocketHandler {
     
     public sendJoinCommand = (gameId: string, playerId: string, name: string) => {
         const command = `JOIN|${gameId}|${playerId}|${name}`
-        console.log(`Sending: ${command}`)
         this.send(command)
     }
 
     public send = (command: string) => {
         if (this.socket.readyState == this.socket.CONNECTING) {
-            console.log(`Waiting 500 ms for socket to connect`)
             setTimeout(this.send, 500, command)
         } else {
             this.socket.send(command)

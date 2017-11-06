@@ -1,9 +1,9 @@
 import { WebPage } from './WebPage'
-import { Game } from './Game'
-import { WebSocketHandler } from './WebSocketHandler'
-import { SessionManager } from './SessionManager'
+import { Game } from '../domain/Game'
+import { WebSocketHandler } from '../infrastructure/WebSocketHandler'
+import { SessionManager } from '../infrastructure/SessionManager'
 import * as izitoast from 'izitoast'
-import { WebSocketHandlerFactory } from './WebSocketHandlerFactory'
+import { WebSocketHandlerFactory } from '../infrastructure/WebSocketHandlerFactory'
 import * as $ from 'jquery'
 
 export class GuessingPage extends WebPage {
@@ -50,7 +50,7 @@ export class GuessingPage extends WebPage {
     }
 
     private errorMsg = (msg: string) => {
-        izitoast.error({ title: "Hey friend!", message: msg, position: 'topLeft', timeout: 10000 })
+        izitoast.error({ title: "", message: msg, position: 'topLeft', timeout: 10000 })
     }
 
     public startGuessing = () => {

@@ -1,5 +1,5 @@
 import { WebSocketHandler } from './WebSocketHandler'
-import { WebPage } from './WebPage'
+import { WebPage } from '../pages/WebPage'
 
 export class WebSocketHandlerFactory {
 

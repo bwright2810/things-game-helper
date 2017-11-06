@@ -1,10 +1,10 @@
 import { WebPage } from './WebPage'
-import { Game } from './Game'
-import { WebSocketHandler } from './WebSocketHandler'
-import { SessionManager } from './SessionManager'
-import { Cookie } from './Cookie'
+import { Game } from '../domain/Game'
+import { WebSocketHandler } from '../infrastructure/WebSocketHandler'
+import { SessionManager } from '../infrastructure/SessionManager'
+import { Cookie } from '../infrastructure/Cookie'
 import * as izitoast from 'izitoast'
-import { WebSocketHandlerFactory } from './WebSocketHandlerFactory'
+import { WebSocketHandlerFactory } from '../infrastructure/WebSocketHandlerFactory'
 import * as $ from 'jquery'
 
 export class LobbyPage extends WebPage {
@@ -23,15 +23,11 @@ export class LobbyPage extends WebPage {
     }
 
     public load(game: Game) {
-        console.log(`In LobbyPage load`)
-
         this.webSocketHandler = WebSocketHandlerFactory.buildWebSocketHandler(this)
         this.enableClientAccess()
             
         $.get(`/lobbyPage/${game.id}/${this.sessionManager.getPlayerId()}`)
         .done((html: string) => {
-            izitoast.info({ title: "Hey friend!", message: `Joined Game ${game.id}`, 
-            position: 'topLeft', timeout: 4000 })
             $('#main-msg').text(`In ${game.creatorName}'s Game (${game.id})`)
             $('#main-content').html(html)
         })
@@ -43,8 +39,6 @@ export class LobbyPage extends WebPage {
     }
 
     public update(game: Game) {
-        console.log(`In LobbyPage update`)
-
         $.get(`/lobbyPage/${game.id}/${this.sessionManager.getPlayerId()}`)
         .done((html: string) => {
             $('#main-content').html(html)
@@ -53,7 +47,7 @@ export class LobbyPage extends WebPage {
     }
 
     private errorMsg = (msg: string) => {
-        izitoast.error({ title: "Hey friend!", message: msg, position: 'topLeft', timeout: 10000 })
+        izitoast.error({ title: "", message: msg, position: 'topLeft', timeout: 10000 })
     }
 
     public beginGame = () => {

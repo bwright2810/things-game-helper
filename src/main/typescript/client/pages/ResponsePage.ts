@@ -1,9 +1,9 @@
 import { WebPage } from './WebPage'
-import { Game } from './Game'
-import { WebSocketHandler } from './WebSocketHandler'
-import { SessionManager } from './SessionManager'
+import { Game } from '../domain/Game'
+import { WebSocketHandler } from '../infrastructure/WebSocketHandler'
+import { SessionManager } from '../infrastructure/SessionManager'
 import * as izitoast from 'izitoast'
-import { WebSocketHandlerFactory } from './WebSocketHandlerFactory'
+import { WebSocketHandlerFactory } from '../infrastructure/WebSocketHandlerFactory'
 import * as $ from 'jquery'
 
 export class ResponsePage extends WebPage {
@@ -30,6 +30,7 @@ export class ResponsePage extends WebPage {
         .done((html: string) => {
             $('#main-msg').text(`In ${game.creatorName}'s Game (${game.id})`)
             $('#main-content').html(html)
+            this.addEventHooks()
         })
         .fail(err =>  {
             console.log(err)
@@ -41,13 +42,22 @@ export class ResponsePage extends WebPage {
         (<any> window).things = this
     }
 
+    private addEventHooks = () => {
+        $("#responseInput").keyup((event) => {
+            if (event.keyCode == 13) {
+                $("#send-btn").click();
+            }
+        });
+    }
+
     public update(game: Game) {
         $.get(`/responsePage/${game.id}/${this.sessionManager.getPlayerId()}`)
         .done((html: string) => {
             $('#main-content').html(html)
+            this.addEventHooks()
 
             if (game.state == "WRITING_SUBMITTED" && game.isPlayerReader(this.sessionManager.getPlayerId())) {
-                izitoast.info({ title: "Hey friend!", message: "All responses submitted!", 
+                izitoast.info({ title: "", message: "All responses submitted!", 
                     position: 'topLeft', timeout: 3000 })
             }
         })
@@ -55,16 +65,23 @@ export class ResponsePage extends WebPage {
     }
 
     private errorMsg = (msg: string) => {
-        izitoast.error({ title: "Hey friend!", message: msg, position: 'topLeft', timeout: 10000 })
+        izitoast.error({ title: "", message: msg, position: 'topLeft', timeout: 5000 })
     }
 
     public addResponse = () => {
         const response = this.inputValue($('#responseInput').get(0))
+
+        const error = this.validate(response)
+        if (error != null) {
+            this.errorMsg(error)
+            return
+        }
+
         $.post("/addResponse", { gameId: this.sessionManager.getGameId(), playerId: this.sessionManager.getPlayerId(),
             responseText: response })
         .fail(err => this.errorMsg(err.responseText))
 
-        izitoast.info({ title: "Hey friend!", message: "Response Added!", 
+        izitoast.info({ title: "", message: "Response Added!", 
             position: 'topLeft', timeout: 2000 })
     }
 
@@ -72,11 +89,23 @@ export class ResponsePage extends WebPage {
         return (<HTMLInputElement> element).value
     }
 
+    private validate = (response: string): string => {
+        if (response.trim().length == 0) {
+            return "Response cannot be empty"
+        }
+
+        if (response.trim().length > 200) {
+            return "Response too long"
+        }
+
+        return null
+    }
+
     public rewriteResponse = () => {
         $.post("/removeResponse", { gameId: this.sessionManager.getGameId(), playerId: this.sessionManager.getPlayerId() })
         .fail(err => this.errorMsg(err.responseText))
 
-        izitoast.info({ title: "Hey friend!", message: "You can now re-write your response", 
+        izitoast.info({ title: "", message: "You can now re-write your response", 
             position: 'topLeft', timeout: 3000 })
     }
 

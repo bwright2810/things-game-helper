@@ -18,8 +18,10 @@ class GameWebSocket {
 
     companion object {
         fun init() {
-            Spark.webSocket("/echo", GameWebSocket::class.java)
+            Spark.webSocket("/things", GameWebSocket::class.java)
         }
+
+        val WEB_SOCKET_ADDRESS = "ws://192.168.0.14:4567/things"
     }
 
     private val sessionStore: SessionStore = Injection.instance()
