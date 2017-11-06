@@ -2,14 +2,14 @@ import { WebPage } from './WebPage'
 import { Game } from './Game'
 import { WebSocketHandler } from './WebSocketHandler'
 import { SessionManager } from './SessionManager'
-import { Cookie } from './Cookie'
 import * as izitoast from 'izitoast'
 import { WebSocketHandlerFactory } from './WebSocketHandlerFactory'
 import * as $ from 'jquery'
 
-export class LobbyPage extends WebPage {
+export class GuessingPage extends WebPage {
 
-    public static TITLE = "LOBBY"
+    public static TITLE = "GUESSING"
+
     private webSocketHandler: WebSocketHandler
     private sessionManager: SessionManager
 
@@ -19,23 +19,22 @@ export class LobbyPage extends WebPage {
     }
 
     public getName(): string {
-        return LobbyPage.TITLE
+        return GuessingPage.TITLE
     }
 
     public load(game: Game) {
-        console.log(`In LobbyPage load`)
-
         this.webSocketHandler = WebSocketHandlerFactory.buildWebSocketHandler(this)
         this.enableClientAccess()
             
-        $.get(`/lobbyPage/${game.id}/${this.sessionManager.getPlayerId()}`)
+        $.get(`/guessingPage/${game.id}/${this.sessionManager.getPlayerId()}`)
         .done((html: string) => {
-            izitoast.info({ title: "Hey friend!", message: `Joined Game ${game.id}`, 
-            position: 'topLeft', timeout: 4000 })
             $('#main-msg').text(`In ${game.creatorName}'s Game (${game.id})`)
             $('#main-content').html(html)
         })
-        .fail(err => this.errorMsg(err.responseText))
+        .fail(err =>  {
+            console.log(err)
+            this.errorMsg(err.responseText)
+        })
     }
 
     private enableClientAccess = () => {
@@ -43,9 +42,7 @@ export class LobbyPage extends WebPage {
     }
 
     public update(game: Game) {
-        console.log(`In LobbyPage update`)
-
-        $.get(`/lobbyPage/${game.id}/${this.sessionManager.getPlayerId()}`)
+        $.get(`/guessingPage/${game.id}/${this.sessionManager.getPlayerId()}`)
         .done((html: string) => {
             $('#main-content').html(html)
         })
@@ -56,13 +53,18 @@ export class LobbyPage extends WebPage {
         izitoast.error({ title: "Hey friend!", message: msg, position: 'topLeft', timeout: 10000 })
     }
 
-    public beginGame = () => {
-        $.post("/begin", { gameId: this.sessionManager.getGameId() })
+    public startGuessing = () => {
+        $.post("/startGuessing", { gameId: this.sessionManager.getGameId() })
         .fail(err => this.errorMsg(err.responseText))
     }
 
-    public makeReader = (selectedPlayerId: string) => {
-        $.post("/pickReader", { gameId: this.sessionManager.getGameId(), readerId: selectedPlayerId })
+    public markGuessed = (responseId: string) => {
+        $.post("/guess", { gameId: this.sessionManager.getGameId(), responseId: responseId })
+        .fail(err => this.errorMsg(err.responseText))
+    }
+
+    public pickNewReader = () => {
+        $.post("/begin", { gameId: this.sessionManager.getGameId() })
         .fail(err => this.errorMsg(err.responseText))
     }
 }

@@ -9,9 +9,12 @@ import com.brandonswright.things.domain.game.Response
 import com.brandonswright.things.infrastructure.websocket.SessionStore
 import com.brandonswright.things.infrastructure.websocket.WebSocketMessageFactory
 import com.google.gson.Gson
+import mu.KLogging
 import spark.Spark.*
 
 class WritingController {
+
+    companion object: KLogging()
 
     val gameRepo: GameRepository = Injection.instance()
     val requestHandlingService: RequestHandlingService = Injection.instance()
@@ -40,16 +43,19 @@ class WritingController {
         }
 
         post("/begin") { req, res ->
-            val gameId = req.queryParams("gameId")
-            logger.debug { "Received request to begin game $gameId" }
+            try {
+                val gameId = req.queryParams("gameId")
+                logger.debug { "Received request to begin game $gameId" }
 
-            val game = requestHandlingService.handleBeginRequest(gameId)
+                val game = requestHandlingService.handleBeginRequest(gameId)
 
-            val toast = "Reader is being selected"
-            val gameSessions = sessionStore.getAllSessionsForGame(gameId)
-            gameSessions.forEach { it.remote.sendString("TOAST|$toast") }
+                toast(gameId, "Reader is being selected")
 
-            broadcastGame(game)
+                broadcastGame(game)
+            } catch (e: Exception) {
+                logger.error { e }
+                throw e
+            }
         }
 
         post("/pickReader") { req, res ->
@@ -58,6 +64,9 @@ class WritingController {
             logger.debug { "Reader with id $readerId picked in game $gameId" }
 
             val game = gameRepo.doAndSave(gameId) { it.pickReader(readerId) }
+
+            val playerName = game.getPlayerNameForId(readerId)
+            toast(gameId, "$playerName selected as Reader")
 
             broadcastGame(game)
         }
@@ -68,12 +77,12 @@ class WritingController {
             val responseText = req.queryParams("responseText")
             logger.debug { "Player $playerId in game $gameId responded with: $responseText" }
 
-            val game = gameRepo.doAndSave(gameId) { it.addResponse(Response(playerId, responseText)) }
+            val game = gameRepo.doAndSave(gameId) { it.addResponse(playerId, responseText) }
 
             broadcastGame(game)
         }
 
-        delete("/removeResponse") { req, res ->
+        post("/removeResponse") { req, res ->
             val gameId = req.queryParams("gameId")
             val playerId = req.queryParams("playerId")
             logger.debug { "Taking back response for player $playerId in game $gameId" }
@@ -89,6 +98,7 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.lockResponses() }
 
+            toast(gameId, "Responses Locked In!")
             broadcastGame(game)
         }
 
@@ -98,15 +108,16 @@ class WritingController {
 
             val game = gameRepo.doAndSave(gameId) { it.startGuessingStage() }
 
+            toast(gameId, "Guessing round started!")
             broadcastGame(game)
         }
 
         post("/guess") { req, res ->
             val gameId = req.queryParams("gameId")
-            val playerId = req.queryParams("playerId")
-            logger.debug { "Guessed response for player $playerId in game $gameId" }
+            val responseId = Integer.valueOf(req.queryParams("responseId"))
+            logger.debug { "Guessed response $responseId in game $gameId" }
 
-            val game = gameRepo.doAndSave(gameId) { it.markPlayersResponseGuessed(playerId) }
+            val game = gameRepo.doAndSave(gameId) { it.markResponseGuessed(responseId) }
 
             broadcastGame(game)
         }
@@ -114,5 +125,9 @@ class WritingController {
 
     private fun broadcastGame(game: Game) {
         sessionStore.broadcastToGamePlayers(game.id, WebSocketMessageFactory.buildMessageForGame(game))
+    }
+
+    private fun toast(gameId: String, toast: String) {
+        sessionStore.broadcastToGamePlayers(gameId, "TOAST|$toast")
     }
 }

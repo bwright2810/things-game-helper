@@ -1,7 +1,14 @@
+//- game -> A Game object
+    isCreator -> boolean indicating if the client is the creator of the game
+
 div(id="players")
     h3="Players:"
     ul
-        for player in players
-            li= player.name
-if isCreator == "true"
+        for player in game.players
+            div
+                li= player.name
+                    |         
+                    if isCreator == "true" and game.state == "PICKING"
+                        button(type='button' id='pickReader-#{player.id}' onclick="things.makeReader('#{player.id}')") Make Reader
+if isCreator == "true" and game.canBeBegun()
     button(type='button' id='begin-btn' onclick='things.beginGame()') Begin Game

@@ -1,0 +1,48 @@
+//- game -> A Game object
+    currentPlayer -> A Player object representing the client
+
+div(id="players")
+    h3="Players:"
+    ul
+        for player in game.players
+            div
+                li= player.name
+                    if player.isReader()
+                        |      (Reader)
+
+if currentPlayer.isReader()
+    br
+    br
+    div(id="instructionsDiv")
+            p You are the reader. Please read the submitted responses and click Start Guessing to begin guessing round.
+
+br
+br
+
+div(id="responsesDiv")
+    h3="Responses:"
+    ul
+    for response in game.getResponses()
+        div
+            li
+                if response.isGuessed()  
+                    span(style="text-decoration: line-through;")= response.text
+                    |     
+                    | Was #{game.getPlayerNameForId(response.playerId)}'s!
+                else
+                    | #{response.text}
+                    if game.state == "GUESSING" and currentPlayer.isReader()
+                        |     
+                        button(type='button' id='guess-btn' onclick='things.markGuessed("#{response.id}")') Mark Guessed
+                        
+if game.state == "READING" and currentPlayer.isReader()
+    br
+    br
+    div(id="startGuessingDiv")
+        button(type='button' id='startGuessing-btn' onclick='things.startGuessing()') Start Guessing
+
+if game.state == "ROUND_OVER" and currentPlayer.isReader()
+    div(id="pickNewReaderDiv")
+        br
+        br
+        button(type='button' id='newReader-btn' onclick='things.pickNewReader()') Pick New Reader

@@ -1,13 +1,11 @@
 export class Player {
     public name: string
-    public isReader: boolean
-    public isWriter: boolean
+    public role: string
     public id: string
 
     constructor(json: any) {
         this.name = json.name
-        this.isReader = json.isReader
-        this.isWriter = json.isWriter
+        this.role = json.role
         this.id = json.id
     }
 }

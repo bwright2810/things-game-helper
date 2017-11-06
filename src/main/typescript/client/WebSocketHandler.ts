@@ -36,9 +36,12 @@ export class WebSocketHandler {
         this.socket.addEventListener('message', this.pinged)
     }
 
+    public updatePage(webPage: WebPage) {
+        this.webPage = webPage
+    }
+
     private pinged = (event: MessageEvent) => {
         const msg = event.data as string
-        console.log(`Message from server: ${msg}`)
 
         if (msg.startsWith("JOINED")) {
             const gameJson = JSON.parse(msg.split("|")[1])
@@ -57,16 +60,6 @@ export class WebSocketHandler {
             const game = new Game(gameJson)
 
             this.loadPageForGame(game)
-            //const joinedPlayerId = msg.split("|")[2]
-            /**this.displayJoinedGame(joinedPlayerId, game.creatorName, game.players)
-
-            if (this.cookie().isCreator) {
-                if (game.players.length > 1) {
-                    $("#gameButtons").append("<br>")
-                    $("#gameButtons").append("<button type='button' id='begin-btn' onclick='things.beginGame();'>Begin</button>")
-                    $("#gameButtons").css("display", "block")
-                }
-            }**/
         } else if (msg.startsWith("TOAST")) {
             const toast = msg.split("|")[1]
             izitoast.info({ title: "Hey friend!", message: toast, 
@@ -92,7 +85,8 @@ export class WebSocketHandler {
 
     public send = (command: string) => {
         if (this.socket.readyState == this.socket.CONNECTING) {
-            setTimeout(this.send, 500)
+            console.log(`Waiting 500 ms for socket to connect`)
+            setTimeout(this.send, 500, command)
         } else {
             this.socket.send(command)
         }

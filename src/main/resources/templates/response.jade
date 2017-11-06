@@ -1,0 +1,45 @@
+//- game -> A Game object
+    currentPlayer -> A Player object representing the client
+
+div(id="players")
+    h3="Players:"
+    ul
+        for player in game.players
+            div
+                li= player.name
+                    if player.isReader()
+                        |      (Reader)
+
+if game.state == "WRITING_PENDING" or game.state == "WRITING_SUBMITTED"
+    br
+    br
+    div(id="instructionsDiv")
+        if currentPlayer.isReader()
+            p You are the reader. Please read the Topic card to the other players. When finished, write your own response to the card.
+        else
+            p Please wait for the reader to read you the Topic card, then send your response below.
+
+br
+br
+
+div(id="responseDiv")
+    if game.canResponseBeWritten(currentPlayer.id)
+        input(id='responseInput' type='text' placeholder='Enter Response')
+        button(type='button' id='send-btn' onclick='things.addResponse()') Send
+    else if game.canResponseBeTakenBack(currentPlayer.id)
+        button(type='button' id='rewrite-btn' onclick='things.rewriteResponse()') Rewrite Response
+
+if currentPlayer.isReader()
+    br
+    br
+    div(id="playersRespondedDiv")
+        p Responses Received: #{game.getNumberOfResponses()} / #{game.getNumberOfPlayers()}
+
+    if game.canResponsesBeLocked()
+        br
+        br
+        div(id="lockResponseDiv")
+            button(type='button' id='lock-btn' onclick='things.lockResponses()') Lock Responses
+
+        
+    

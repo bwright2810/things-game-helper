@@ -1,6 +1,6 @@
 package com.brandonswright.things.domain.game
 
-class Response(val playerId: String, val responseText: String) {
+class Response(val id: Int, val playerId: String, val text: String) {
 
     var state: ResponseState = ResponseState.SUBMITTED
         private set

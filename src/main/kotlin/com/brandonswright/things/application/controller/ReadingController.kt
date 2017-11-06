@@ -3,11 +3,14 @@ package com.brandonswright.things.application.controller
 import com.brandonswright.things.application.config.Injection
 import com.brandonswright.things.domain.game.GameRepository
 import com.google.gson.Gson
+import mu.KLogging
 import spark.ModelAndView
 import spark.Spark.*
 import spark.template.jade.JadeTemplateEngine
 
 class ReadingController {
+
+    companion object: KLogging()
 
     val gameRepo: GameRepository = Injection.instance()
 
@@ -22,18 +25,45 @@ class ReadingController {
         }, JadeTemplateEngine())
 
         get("/lobbyPage/:gameId/:playerId", { req, res ->
-            val gameId = req.params("gameId")
-            val playerId = req.params("playerId")
-            val game = gameRepo.findGame(gameId)
-            val isCreator = game.isCreator(playerId)
+            try {
+                val gameId = req.params("gameId")
+                val playerId = req.params("playerId")
+                val game = gameRepo.findGame(gameId)
+                val isCreator = game.isCreator(playerId)
 
-            return@get ModelAndView(mapOf("players" to game.players, "isCreator" to isCreator), "lobby")
+                return@get ModelAndView(mapOf("game" to game, "isCreator" to isCreator), "lobby")
+            } catch (e: Exception) {
+                logger.error { e }
+                throw e
+            }
         }, JadeTemplateEngine())
 
-        get("/playersList/:gameId", { req, res ->
-            val gameId = req.params("gameId")
-            val game = gameRepo.findGame(gameId)
-            return@get ModelAndView(mapOf("players" to game.players), "playerslist")
+        get("/responsePage/:gameId/:playerId", { req, res ->
+            try {
+                val gameId = req.params("gameId")
+                val playerId = req.params("playerId")
+                val game = gameRepo.findGame(gameId)
+                val player = game.getPlayerForId(playerId)
+
+                return@get ModelAndView(mapOf("game" to game, "currentPlayer" to player), "response")
+            } catch (e: Exception) {
+                logger.error { e }
+                throw e
+            }
+        }, JadeTemplateEngine())
+
+        get("/guessingPage/:gameId/:playerId", { req, res ->
+            try {
+                val gameId = req.params("gameId")
+                val playerId = req.params("playerId")
+                val game = gameRepo.findGame(gameId)
+                val player = game.getPlayerForId(playerId)
+
+                return@get ModelAndView(mapOf("game" to game, "currentPlayer" to player), "guessing")
+            } catch (e: Exception) {
+                logger.error { e }
+                throw e
+            }
         }, JadeTemplateEngine())
 
         get("/game/:gameId", { req, res ->

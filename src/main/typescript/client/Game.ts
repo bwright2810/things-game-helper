@@ -16,4 +16,13 @@ export class Game {
         this.state = json.state
         this.creatorName = json.creatorName
     }
+
+    public isPlayerReader = (playerId: string) => {
+        for (let player of this.players) {
+            if (player.id == playerId) {
+                return player.role == "READER"
+            }
+        }
+        return false
+    }
 }

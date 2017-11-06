@@ -7,9 +7,3 @@ import * as $ from 'jquery';
 console.log("Loaded things app");
 
 (<any> window).things.init();
-
-$("#game-id").keyup((event) => {
-    if (event.keyCode == 13) {
-        $("#join-btn").click();
-    }
-});

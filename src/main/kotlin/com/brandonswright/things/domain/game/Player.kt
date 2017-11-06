@@ -2,11 +2,12 @@ package com.brandonswright.things.domain.game
 
 class Player(val name: String, val id: String) {
 
-    private var role = PlayerRole.UNASSIGNED
+    var role = PlayerRole.UNASSIGNED
+        private set
 
-    val isReader = role == PlayerRole.READER
+    fun isReader() = role == PlayerRole.READER
 
-    val isWriter = role == PlayerRole.WRITER
+    fun isWriter() = role == PlayerRole.WRITER
 
     fun makeReader() {
         role = PlayerRole.READER

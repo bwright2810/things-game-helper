@@ -4,6 +4,8 @@ import { WebSocketHandler } from './WebSocketHandler'
 import { SessionManager } from './SessionManager'
 import { Cookie } from './Cookie'
 import * as izitoast from 'izitoast'
+import * as $ from 'jquery'
+import { WebSocketHandlerFactory } from './WebSocketHandlerFactory'
 
 export class StartPage extends WebPage {
 
@@ -25,15 +27,25 @@ export class StartPage extends WebPage {
     }
 
     public load(game: Game) {
-        this.webSocketHandler = new WebSocketHandler(this);
+        this.webSocketHandler = WebSocketHandlerFactory.buildWebSocketHandler(this)
 
-        (<any> window).things = this
+        this.enableClientAccess()
 
         $.get(`/startPage`)
         .done((html: string) => {
             $('#main-content').html(html)
+
+            $("#game-id").keyup((event) => {
+                if (event.keyCode == 13) {
+                    $("#join-btn").click();
+                }
+            });
         })
         .fail(err => this.errorMsg(err.responseText))
+    }
+
+    private enableClientAccess = () => {
+        (<any> window).things = this
     }
 
     public update(game: Game) {
